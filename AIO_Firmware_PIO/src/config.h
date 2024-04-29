@@ -1,23 +1,30 @@
-
+// Define the macro NEW_FLASH_FS
 #define NEW_FLASH_FS
+
+// Check if NEW_FLASH_FS is not defined
 #ifndef NEW_FLASH_FS
 
 /***************************************************
-  由于使用了新的文件系统，config.cpp/config.h中实现的功能
-已被摒弃，为留作参考故未删除代码。
+  Due to the use of a new file system, the functionality implemented in config.cpp/config.h
+  has been deprecated. The code is kept for reference purposes.
 
-  Github repositories：https://github.com/ClimbSnail/HoloCubic_AIO
+  Github repositories: https://github.com/ClimbSnail/HoloCubic_AIO
 
   Last review/edit by ClimbSnail: 2023/03/14
  ****************************************************/
 
+// Check if CONFIG_H is not defined
 #ifndef CONFIG_H
 #define CONFIG_H
+
+// Include necessary libraries
 #include <WString.h>
 #include <Preferences.h>
 
-extern Preferences prefs;       // 声明Preferences对象
+// Declare Preferences object
+extern Preferences prefs;
 
+// Define the structure for MPU configuration
 struct MPU_Config
 {
     int16_t x_gyro_offset;
@@ -29,30 +36,35 @@ struct MPU_Config
     int16_t z_accel_offset;
 };
 
+// Define the structure for configuration settings
 struct Config
 {
     String ssid;
     String password;
-    String cityname;              // 显示的城市
-    String language;              // 天气查询的地址编码
-    String weather_key;           // 知心天气api_key（秘钥）
-    String tianqi_appid;          // tianqiapid 的 appid
-    String tianqi_appsecret;      // tianqiapid 的 appsecret
-    String tianqi_addr;           // tianqiapid 的地址（填中文）
-    String bili_uid;              // bilibili的uid
-    uint8_t backLight;            // 屏幕亮度（1-100）
-    uint8_t rotation;             // 屏幕旋转方向
-    uint8_t auto_calibration_mpu; // 是否自动校准陀螺仪 0关闭自动校准 1打开自动校准
+    String cityname;              // City to be displayed
+    String language;              // Address code for weather query
+    String weather_key;           // API key for ZhiXin weather
+    String tianqi_appid;          // App ID for TianQi API
+    String tianqi_appsecret;      // App secret for TianQi API
+    String tianqi_addr;           // Address for TianQi API (in Chinese)
+    String bili_uid;              // UID for Bilibili
+    uint8_t backLight;            // Screen brightness (1-100)
+    uint8_t rotation;             // Screen rotation direction
+    uint8_t auto_calibration_mpu; // Whether to enable auto calibration for gyroscope (0: disabled, 1: enabled)
     uint8_t mpu_order;
-    MPU_Config mpu_config; // 保存mup的校准数据
+    MPU_Config mpu_config;        // Save MPU calibration data
 };
 
+// Function to read configuration from file
 void config_read(const char *file_path, Config *cfg);
 
+// Function to save configuration to file
 void config_save(const char *file_path, Config *cfg);
 
+// Function to read MPU configuration from file
 void mpu_config_read(const char *file_path, Config *cfg);
 
+// Function to save MPU configuration to file
 void mpu_config_save(const char *file_path, Config *cfg);
 
 #endif

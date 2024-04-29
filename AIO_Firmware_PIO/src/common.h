@@ -1,54 +1,59 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+// Define the AIO version
 #define AIO_VERSION "2.1.10"
-#define GET_SYS_MILLIS xTaskGetTickCount // 获取系统毫秒数
-// #define GET_SYS_MILLIS millis            // 获取系统毫秒数
 
-#include "Arduino.h"
-#include "driver/rgb_led.h"
-#include "driver/flash_fs.h"
-#include "driver/sd_card.h"
-#include "driver/display.h"
-#include "driver/ambient.h"
-#include "driver/imu.h"
-#include "network.h"
+// Define a macro to get the system milliseconds
+#define GET_SYS_MILLIS xTaskGetTickCount // Get system milliseconds
+// #define GET_SYS_MILLIS millis            // Get system milliseconds
 
-// RGB
+// Include necessary libraries
+#include "Arduino.h"              // Arduino core library
+#include "driver/rgb_led.h"       // RGB LED driver
+#include "driver/flash_fs.h"      // Flash file system driver
+#include "driver/sd_card.h"       // SD card driver
+#include "driver/display.h"       // Display driver
+#include "driver/ambient.h"       // Ambient light sensor driver
+#include "driver/imu.h"           // IMU (Inertial Measurement Unit) driver
+#include "network.h"              // Network library
+
+// Define pin numbers for RGB LED
 #define RGB_LED_PIN 27
 
-// SD_Card
+// Define pin numbers for SD card
 #define SD_SCK 14
 #define SD_MISO 26
 #define SD_MOSI 13
 #define SD_SS 15
 
-// MUP6050
+// Define pin numbers for IMU (MPU6050)
 #define IMU_I2C_SDA 32
 #define IMU_I2C_SCL 33
 
-extern IMU mpu; // 原则上只提供给主程序调用
-extern SdCard tf;
-extern Pixel rgb;
-// extern Config g_cfg;       // 全局配置文件
-extern Network g_network;  // 网络连接
-extern FlashFS g_flashCfg; // flash中的文件系统（替代原先的Preferences）
-extern Display screen;     // 屏幕对象
-extern Ambient ambLight;   // 光纤传感器对象
+// Declare external objects and variables
+extern IMU mpu;                   // IMU object (accessible to the main program)
+extern SdCard tf;                 // SD card object
+extern Pixel rgb;                 // RGB LED object
+extern Network g_network;         // Network connection object
+extern FlashFS g_flashCfg;        // Flash file system object (replaces Preferences)
+extern Display screen;            // Display object
+extern Ambient ambLight;          // Ambient light sensor object
 
+// Function to delay for a specified number of milliseconds
 boolean doDelayMillisTime(unsigned long interval,
                           unsigned long *previousMillis,
                           boolean state);
 
-// 光感 (与MPU6050一致)
+// Define pin numbers for ambient light sensor (same as MPU6050)
 #define AMB_I2C_SDA 32
 #define AMB_I2C_SCL 33
 
-// 屏幕尺寸
-#define SCREEN_HOR_RES 240 // 水平
-#define SCREEN_VER_RES 240 // 竖直
+// Define screen resolution
+#define SCREEN_HOR_RES 240 // Horizontal resolution
+#define SCREEN_VER_RES 240 // Vertical resolution
 
-// TFT屏幕接口
+// Define TFT screen interface pins
 // #define PEAK
 #ifdef PEAK
 #define LCD_BL_PIN 12
@@ -64,14 +69,14 @@ boolean doDelayMillisTime(unsigned long interval,
 
 #define LCD_BL_PWM_CHANNEL 0
 
-// 优先级定义(数值越小优先级越低)
-// 最高为 configMAX_PRIORITIES-1
-#define TASK_RGB_PRIORITY 0  // RGB的任务优先级
-#define TASK_LVGL_PRIORITY 2 // LVGL的页面优先级
+// Define task priorities (lower value means higher priority)
+// The highest priority is configMAX_PRIORITIES-1
+#define TASK_RGB_PRIORITY 0  // Priority of the RGB task
+#define TASK_LVGL_PRIORITY 2 // Priority of the LVGL page
 
-// lvgl 操作的锁
+// Mutex for LVGL operations
 extern SemaphoreHandle_t lvgl_mutex;
-// LVGL操作的安全宏（避免脏数据）
+// Macro for safe LVGL operations (avoiding dirty data)
 #define AIO_LVGL_OPERATE_LOCK(CODE)                          \
     if (pdTRUE == xSemaphoreTake(lvgl_mutex, portMAX_DELAY)) \
     {                                                        \
@@ -79,6 +84,7 @@ extern SemaphoreHandle_t lvgl_mutex;
         xSemaphoreGive(lvgl_mutex);                          \
     }
 
+// Structure for system utility configuration
 struct SysUtilConfig
 {
     String ssid_0;
@@ -87,12 +93,12 @@ struct SysUtilConfig
     String password_1;
     String ssid_2;
     String password_2;
-    String auto_start_app;        // 开机自启的APP名字
-    uint8_t power_mode;           // 功耗模式（0为节能模式 1为性能模式）
-    uint8_t backLight;            // 屏幕亮度（1-100）
-    uint8_t rotation;             // 屏幕旋转方向
-    uint8_t auto_calibration_mpu; // 是否自动校准陀螺仪 0关闭自动校准 1打开自动校准
-    uint8_t mpu_order;            // 操作方向
+    String auto_start_app;        // Name of the app to start on boot
+    uint8_t power_mode;           // Power mode (0 for power saving mode, 1 for performance mode)
+    uint8_t backLight;            // Screen brightness (1-100)
+    uint8_t rotation;             // Screen rotation direction
+    uint8_t auto_calibration_mpu; // Whether to auto calibrate the gyroscope (0 to disable, 1 to enable)
+    uint8_t mpu_order;            // Operation direction of the MPU
 };
 
 #define GFX 0
@@ -103,7 +109,7 @@ struct SysUtilConfig
 #define TFT_SCLK 18
 #define TFT_CS -1 // Not connected
 #define TFT_DC 2
-#define TFT_RST 4 // Connect reset to ensure display initialises
+#define TFT_RST 4 // Connect reset to ensure display initializes
 #include <Arduino_GFX_Library.h>
 extern Arduino_HWSPI *bus;
 extern Arduino_ST7789 *tft;
