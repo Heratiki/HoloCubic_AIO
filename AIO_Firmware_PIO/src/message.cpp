@@ -1,8 +1,10 @@
 #include "message.h"
 #include <string.h>
 
+// MsgHead class implementation
 MsgHead::MsgHead(MODULE_TYPE from_who, MODULE_TYPE to_who)
 {
+    // Initialize member variables
     m_header_mark = 0x2323;
     m_msg_len = 7;
     m_from_who = from_who;
@@ -16,8 +18,8 @@ uint32_t MsgHead::decode(const uint8_t *msg)
     {
         return 0;
     }
+    // Decode the message header
     m_msg_len = msg[2] << 8 + msg[3];
-    // m_msg_len = ntohs(msg[2] << 8 + msg[3]);
     m_from_who = (MODULE_TYPE)msg[4];
     m_to_who = (MODULE_TYPE)msg[5];
     m_action_type = (ACTION_TYPE)msg[6];
@@ -30,6 +32,7 @@ uint32_t MsgHead::encode(uint8_t *msg)
     {
         return 0;
     }
+    // Encode the message header
     msg[0] = 0x23;
     msg[1] = 0x23;
     msg[2] = (uint8_t)(m_msg_len >> 8);
@@ -37,13 +40,12 @@ uint32_t MsgHead::encode(uint8_t *msg)
     msg[4] = (uint8_t)m_from_who;
     msg[5] = (uint8_t)m_to_who;
     msg[6] = (uint8_t)m_action_type;
-    // uint16_t msg_len = htons(m_msg_len);
-    // memcpy((uint8_t *)&msg_len, &msg[4], 2);
     return 7;
 }
 
 bool MsgHead::isLegal()
 {
+    // Check if the header mark is valid
     if (m_header_mark != 0x2323)
     {
         return false;
@@ -52,17 +54,18 @@ bool MsgHead::isLegal()
 }
 
 /********************************************************/
-/* SettingsMsg
+/* SettingsMsg class implementation
 *********************************************************/
 
 SettingsMsg::SettingsMsg(ACTION_TYPE action_type)
 {
+    // Initialize member variables
     m_msg_head.m_from_who = MODULE_TYPE_CUBIC_SETTINGS;
     m_msg_head.m_to_who = MODULE_TYPE_TOOL_SETTINGS;
     m_msg_head.m_action_type = action_type;
     memset(m_prefs_name, 0, 15);
     memset(m_key, 0, 16);
-    m_value_type = VALUE_TYPE_UNKNOWN; // value值的类型
+    m_value_type = VALUE_TYPE_UNKNOWN;
     memset(m_value, 0, 15);
 };
 
@@ -73,9 +76,8 @@ uint32_t SettingsMsg::decode(const uint8_t *msg)
         return 0;
     }
     uint32_t index = m_msg_head.decode(msg);
-    // setting数据的后面是以空格隔开的数据段 一般三段
+    // Decode the settings message
     const char *p_ch = (const char *)msg + index;
-    //
     strncpy(m_prefs_name, p_ch, 15);
     for (; *p_ch != 0x00; ++p_ch)
         ;
@@ -89,7 +91,7 @@ uint32_t SettingsMsg::decode(const uint8_t *msg)
     m_value_type = (VALUE_TYPE)*p_ch;
     p_ch += 2;
 
-    // 解析值 value
+    // Decode the value based on its type
     switch (m_value_type)
     {
     case VALUE_TYPE_INT:
@@ -123,10 +125,9 @@ uint32_t SettingsMsg::decode(const uint8_t *msg)
 
 uint32_t SettingsMsg::encode(uint8_t *msg)
 {
-    // msg最大长度为54字节
     if (NULL == msg)
     {
-        return false;
+        return 0;
     }
     uint32_t index = m_msg_head.encode(msg);
     strncpy((char *)&msg[index], m_prefs_name, 15);
@@ -138,7 +139,7 @@ uint32_t SettingsMsg::encode(uint8_t *msg)
     m_value_type = (VALUE_TYPE)msg[index];
     index += 2;
 
-    // 解析值 value
+    // Encode the value based on its type
     switch (m_value_type)
     {
     case VALUE_TYPE_INT:
@@ -176,11 +177,12 @@ bool SettingsMsg::isLegal()
 }
 
 /********************************************************/
-/* FileSystem
+/* FileSystem class implementation
 *********************************************************/
 
 FileSystem::FileSystem(ACTION_TYPE action_type)
 {
+    // Initialize member variables
     m_msg_head.m_from_who = MODULE_TYPE_CUBIC_FILE_MANAGER;
     m_msg_head.m_to_who = MODULE_TYPE_C_FILE_MANAGER;
     m_msg_head.m_action_type = action_type;
@@ -201,7 +203,7 @@ uint32_t FileSystem::encode(uint8_t *msg)
 {
     if (NULL == msg)
     {
-        return false;
+        return 0;
     }
     uint32_t index = m_msg_head.encode(msg);
     msg[index] = (uint8_t)m_msg_head.m_action_type;
@@ -209,11 +211,12 @@ uint32_t FileSystem::encode(uint8_t *msg)
 }
 
 /********************************************************/
-/* DirCreate
+/* DirCreate class implementation
 *********************************************************/
 
 DirCreate::DirCreate(const char *dir_name)
 {
+    // Initialize member variables
     m_file_system.m_msg_head.m_action_type = AT_DIR_CREATE;
     strncpy(m_dir_path, dir_name, 99);
 };
@@ -233,7 +236,7 @@ uint32_t DirCreate::encode(uint8_t *msg)
 {
     if (NULL == msg)
     {
-        return false;
+        return 0;
     }
     uint32_t index = m_file_system.encode(msg);
     strncpy((char *)&msg[index], m_dir_path, 99);
@@ -241,11 +244,12 @@ uint32_t DirCreate::encode(uint8_t *msg)
 }
 
 /********************************************************/
-/* DirList
+/* DirList class implementation
 *********************************************************/
 
 DirList::DirList(const char *dir_path, const char *dir_info)
 {
+    // Initialize member variables
     m_file_system.m_msg_head.m_action_type = AT_DIR_LIST;
 
     if (NULL != dir_path)
@@ -276,7 +280,7 @@ uint32_t DirList::encode(uint8_t *msg)
 {
     if (NULL == msg)
     {
-        return false;
+        return 0;
     }
     uint32_t index = m_file_system.encode(msg);
     strncpy((char *)&msg[index], m_dir_path, 99);
